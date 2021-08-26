@@ -11,11 +11,9 @@ namespace PortalGroupProject.CMS.Business.Concrete
     public class StarbucksCustomerManager : IStarbucksCustomerService
     {
         private readonly IStarbucksCustomerDal _starbucksCustomerDal;
-        private readonly ICustomerCheckService _customerCheckService;
-        public StarbucksCustomerManager(IStarbucksCustomerDal starbucksCustomerDal,ICustomerCheckService customerCheckService)
+        public StarbucksCustomerManager(IStarbucksCustomerDal starbucksCustomerDal)
         {
             _starbucksCustomerDal = starbucksCustomerDal;
-            _customerCheckService = customerCheckService;
         }
 
         public Customer GetByTc(string nationalityId)
@@ -25,15 +23,7 @@ namespace PortalGroupProject.CMS.Business.Concrete
 
         public async Task Save(Customer customer)
         {
-            var result = await _customerCheckService.CheckIfRealPerson(customer);
-            if (result)
-            {
-                _starbucksCustomerDal.Save(customer);
-            }
-            else
-            {
-                throw new Exception("Not a valid person");
-            }
+            _starbucksCustomerDal.Save(customer);
         }
     }
 }

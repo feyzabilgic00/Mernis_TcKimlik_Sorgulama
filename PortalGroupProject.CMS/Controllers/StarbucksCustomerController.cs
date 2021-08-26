@@ -8,9 +8,11 @@ namespace PortalGroupProject.CMS.Controllers
     public class StarbucksCustomerController : Controller
     {
         public IStarbucksCustomerService _starbucksCustomerService;
-        public StarbucksCustomerController(IStarbucksCustomerService starbucksCustomerService)
+        public ICustomerCheckService _customerCheckService;
+        public StarbucksCustomerController(IStarbucksCustomerService starbucksCustomerService, ICustomerCheckService customerCheckService)
         {
             _starbucksCustomerService = starbucksCustomerService;
+            _customerCheckService = customerCheckService;
         }
         public IActionResult Index()
         {
@@ -23,15 +25,30 @@ namespace PortalGroupProject.CMS.Controllers
         }
         [HttpPost]
         public async Task<IActionResult> Save(Customer customer)
-        {                        
+        {
             var query = _starbucksCustomerService.GetByTc(customer.NationalityId);
-            if (query!=null)
+            var result = await _customerCheckService.CheckIfRealPerson(customer);
+            
+            if (!ModelState.IsValid)
+            {
+                ViewBag.mesaj = "Alanları tekrar kontrol ediniz!";
+                return View();
+            }
+            else if (query != null)
             {
                 ViewBag.tc = "Kullanıcı sistemde kayıtlı!";
                 return View();
             }
+            else if (!result)
+            {
+                ViewBag.person = "Kullanıcı bilgileri geçerli değil";
+                return View();
+            }
+            else
+            { 
                 await _starbucksCustomerService.Save(customer);
-                return RedirectToAction("Index"); 
+                return RedirectToAction("Index");
+            }
         }
     }
 }
